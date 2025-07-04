@@ -1,0 +1,57 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MP4 to MP3 Converter</title>
+  <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.5/dist/ffmpeg.min.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; padding: 2rem; }
+    input[type="file"] { margin: 1rem 0; }
+    button { padding: 0.5rem 1rem; margin: 1rem; }
+    .ad-placeholder { border: 1px dashed #ccc; padding: 1rem; margin-top: 2rem; color: #999; }
+  </style>
+</head>
+<body>
+  <h1>MP4 to MP3 Converter 🔊</h1>
+  <input type="file" id="uploader" accept="video/mp4" />
+  <br />
+  <button id="convertBtn">Convert to MP3</button>
+  <br />
+  <a id="downloadLink" style="display:none;" download="output.mp3">Download MP3</a>
+
+  <div class="ad-placeholder">[Ad Placeholder]</div>
+
+ 
+   <script>
+  window.onload = () => {
+    const { createFFmpeg, fetchFile } = FFmpeg;
+    const ffmpeg = createFFmpeg({ log: true });
+
+    async function convert() {
+      const fileInput = document.getElementById('uploader');
+      const downloadLink = document.getElementById('downloadLink');
+      if (!fileInput.files[0]) return alert("Please select an MP4 file");
+
+      if (!ffmpeg.isLoaded()) await ffmpeg.load();
+      const file = fileInput.files[0];
+
+      ffmpeg.FS('writeFile', 'input.mp4', await fetchFile(file));
+      await ffmpeg.run('-i', 'input.mp4', 'output.mp3');
+
+      const data = ffmpeg.FS('readFile', 'output.mp3');
+      const blob = new Blob([data.buffer], { type: 'audio/mp3' });
+      const url = URL.createObjectURL(blob);
+
+      downloadLink.href = url;
+      downloadLink.style.display = 'inline-block';
+      downloadLink.textContent = 'Download MP3';
+    }
+
+    document.getElementById("convertBtn").addEventListener("click", convert);
+  };
+</script>
+
+</body>
+</html>
